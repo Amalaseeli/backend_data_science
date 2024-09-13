@@ -7,6 +7,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
+from sklearn.model_selection import train_test_split
 
 import pickle
 
@@ -154,6 +155,30 @@ def get_model_details():
             return jsonify({"error":"model not found"}), 404
     else:
         return jsonify({"error":"model_name not provided"}), 400
+    
+@app.route('/split_data', methods=["POST"])
+def split_data():
+    global dataset_name
+    if dataset_name is None:
+        return jsonify({"error":"The dataset_name not provided"}), 400
+    
+    dataset_path=os.path.join(DATASETS_DIR,dataset_name)
+    if os.path.exists(dataset_path):
+        df=pd.read_csv(dataset_path)
+    else: 
+        return jsonify({"error":"Dataset not found"}), 400
+    data=request.json
+    train_percentage=data.get("train_percentage", 0)
+    test_percentage=data.get("test_percentage",0)
+
+    train, test=train_test_split(df, test_size=test_percentage, random_state=4)
+    response_data={
+        "message":"Data split successfully",
+        "train_percentage":train_percentage,
+        "test_percentage":test_percentage
+    }
+    return jsonify({'train_size':len(train), "test_size":len(test)}), 200
+
     
 @app.route('/training',methods=['POST'])
 def train():
