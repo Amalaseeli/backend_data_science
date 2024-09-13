@@ -14,6 +14,7 @@ import pickle
 DATASETS_DIR="datasets"
 FEATURE_COLUMN_FILE="features.json"
 SELECTED_MODEL_FILE="selected_model.json"
+dataset_name=None
 
 models={
     "LogisticRegression":{
@@ -70,6 +71,7 @@ def get_datasets():
 
 @app.route('/datasets', methods=['POST'])
 def post_dataset():
+    global  dataset_name
     dataset_name=request.form['dataset_name']
     dataset_path=os.path.join(DATASETS_DIR, dataset_name)
 
