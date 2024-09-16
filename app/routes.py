@@ -283,8 +283,10 @@ def generate_histogram():
     plt.xlabel('Classes')
     plt.ylabel('Frequency')
     plt.title('Histogram of actual vs Predicted Classes')
-    histogram_path = os.path.join(HISTOGRAMS_DIR, f"histogram_{uuid.uuid4().hex}.png")
-    
+    output_directory=os.path.join(HISTOGRAMS_DIR)
+    os.makedirs(output_directory)
+    histogram_path = os.path.join(output_directory, f"histogram_{uuid.uuid4().hex}.png")
+   
     plt.savefig(histogram_path)
 
     # img = io.BytesIO()
