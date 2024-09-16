@@ -1,1 +1,1 @@
-["age", "chol", "sex", "cp", "slope", "trestbps", "oldpeak", "thalach", "exang", "ca", "restecg", "fbs", "thal"]
+["age", "sex", "chol", "thalach", "trestbps", "slope", "fbs", "exang", "oldpeak", "cp", "thal", "ca", "restecg"]
