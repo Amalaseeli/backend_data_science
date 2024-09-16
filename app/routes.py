@@ -8,7 +8,7 @@ from sklearn.naive_bayes import GaussianNB, MultinomialNB
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_splitfrom sklearn.model_selection import train_test_split
 import pickle
 import uuid
 import joblib
@@ -78,6 +78,7 @@ def get_datasets():
 
 @app.route('/datasets', methods=['POST'])
 def post_dataset():
+    global dataset_name
     global dataset_name
     dataset_name=request.form['dataset_name']
     dataset_path=os.path.join(DATASETS_DIR, dataset_name)
