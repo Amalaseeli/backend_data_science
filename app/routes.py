@@ -8,15 +8,18 @@ from sklearn.naive_bayes import GaussianNB, MultinomialNB
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
-from sklearn.model_selection import train_test_splitfrom sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split
 import pickle
 import uuid
 import joblib
-
+import matplotlib.pyplot as plt
+import io
 
 DATASETS_DIR="datasets"
 FEATURE_COLUMN_FILE="features.json"
 SELECTED_MODEL_FILE="selected_model.json"
+HISTOGRAMS_DIR="histograms"
 dataset_name=None
 train_percentage=None
 test_percentage=None
@@ -265,73 +268,28 @@ def train_model():
     return jsonify(response_data), 200
 
 
+#generate an histogram
+@app.route('/generate_histogram', methods=['POST'])
+def generate_histogram():
+    global model, X_test, y_test
+
+    if model is None or X_test is None or y_test is None:
+            return jsonify({'error': 'Model or test data not found'}), 400
+
+    plt.hist(y_test)
+    # plt.hist(y_test, bins=10, alpha=0.5, label='Test')
+    plt.hist(model.predict(X_test), bins = 10, alpha = 0.5, label = 'Predicted')
+    plt.legend(loc='upper right')
+    plt.xlabel('Classes')
+    plt.ylabel('Frequency')
+    plt.title('Histogram of actual vs Predicted Classes')
+    histogram_path = os.path.join(HISTOGRAMS_DIR, f"histogram_{uuid.uuid4().hex}.png")
     
+    plt.savefig(histogram_path)
 
-    
+    # img = io.BytesIO()
+    # plt.savefig(img, format='png')
+    # img.seek(0)
+    plt.close()
 
-
-
-# @app.route('/training',methods=['POST'])
-# def train():
-#     model=load_selcted_model()
-#     print(model)
-#     if model:
-#         if model== 'LogisticRegression':
-#             training_model=LogisticRegression()
-#         elif model == "MLPClassifier":
-#             training_model=MLPClassifier()
-#         elif model == "SVC":
-#             training_model=SVC()
-#     else:
-#         return jsonify({"error":"Model name not provided"}), 400
-#     print("training_model",training_model)
-#     if os.path.exists('datasets/heart.csv'):
-#         df=pd.read_csv('datasets/heart.csv')
-#         all_columns=set(df.columns)
-#         selected_columns=set(load_features_columns())
-#         print(all_columns, selected_columns)
-#         unselected_columns=list(all_columns-selected_columns)
-    
-#     x_train=df.drop(columns=unselected_columns)
-#     y_train=df.drop(columns=selected_columns)
-#     x_train=pd.get_dummies(x_train)
-#     y_train=pd.get_dummies(y_train)
-
-#     training_model=training_model.fit(x_train, y_train)
-
-#     with open(str(model)+'.pkl','wb') as f:
-#         pickle.dump(training_model, f)
-
-#     return ''
-
-
-# @app.route('/testing', methods=["POST"])
-# def test():
-#     with open('LogisticRegression.pkl','rb') as f:
-#         testing_model=pickle.load(f)
-    
-#     if os.path.exists('datasets/heart.csv'):
-#         df=pd.read_csv('datasets/heart.csv')
-#         all_columns=set(df.columns)
-#         selected_columns=set(load_features_columns())
-#         print(all_columns, selected_columns)
-#         unselected_columns=list(all_columns-selected_columns)
-    
-#     x_train=df.drop(columns=unselected_columns)
-#     y_train=df.drop(columns=selected_columns)
-#     x_train=pd.get_dummies(x_train)
-#     y_train=pd.get_dummies(y_train)
-
-#     predicted= testing_model.predict(x_train)
-#     results=confusion_matrix(y_train, predicted)
-#     print("confusion_matrix:")
-#     print(results)
-#     print("Accuracy_score:", accuracy_score(y_train, predicted))
-#     print("classification_report:",classification_report(y_train, predicted))
-    
-#     return jsonify({"success": True})
-
-
-        
-    
-
+    return jsonify('success', True)
