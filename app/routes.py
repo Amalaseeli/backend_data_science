@@ -10,6 +10,7 @@ from sklearn.svm import SVC
 from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import train_test_split
+from transformers import GPT2LMHeadModel, GPT2Tokenizer, BertTokenizer, BertForMaskedLM
 import pickle
 import uuid
 import joblib
@@ -25,6 +26,21 @@ train_percentage=None
 test_percentage=None
 selected_model=None
 unselcted_columns=None
+
+berttokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+bertmodel = BertForMaskedLM.from_pretrained("bert-base-uncased")
+
+gpt2tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+gpt2model = GPT2LMHeadModel.from_pretrained('gpt2')
+
+llm_models = {
+    "BERT-BASE-UNCASED" : {
+        'type': ['Masking Word Prediction']
+    },
+    "GPT2" : {
+        'type': ['Auto Complete', 'Text Generation', 'Text Completion']
+    }
+}
 
 models={
     "LogisticRegression":{
@@ -295,3 +311,31 @@ def generate_histogram():
     plt.close()
 
     return jsonify('success', True)
+
+
+def gpt2_generate_response(input_text):
+    input_ids = gpt2tokenizer.encode(input_text, return_tensors="pt")
+    output = gpt2model.generate(input_ids, max_length=100, num_return_sequences=1)
+    generated_text = gpt2tokenizer.decode(output[0], skip_special_tokens=True)
+    return generated_text
+
+def bert_generate_text(input_text):
+    input_ids = berttokenizer.encode(input_text, return_tensors="pt")
+    output = bertmodel.generate(input_ids, max_length=100, num_return_sequences=1, pad_token_id=berttokenizer.eos_token_id)
+    generated_text = berttokenizer.decode(output[0], skip_special_tokens=True)
+    return generated_text
+
+@app.route('/llm_models', methods=["POST", "GET"])
+def LLM_models():
+    if request.method == "POST" :
+        data=request.json
+        user_input=data.get("user_input")
+        gerated_text=gpt2_generate_response(user_input)
+        print(gerated_text)
+        return jsonify({"generated_text":gerated_text})
+    elif request.method=="GET":
+            return jsonify({"llm_models":list(llm_models.keys())})
+    else:
+        return jsonify({"error":"Please select a valid model"})
+
+
