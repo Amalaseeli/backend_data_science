@@ -1,5 +1,5 @@
 from app import app
-from flask import render_template, jsonify, request
+from flask import render_template, jsonify, request,  Blueprint
 import os
 import pandas as pd
 import json
@@ -41,6 +41,19 @@ llm_models = {
         'type': ['Auto Complete', 'Text Generation', 'Text Completion']
     }
 }
+magicalCodex_blueprint = Blueprint('magicalCodex', __name__)
+
+SELECTED_MODEL_MC = 'selected_model_MC.json'
+DATASETS_MC_DIR = 'datasets_MC'
+
+selected_dataset_mc = None
+dataset_text = None
+
+models_MC = {
+    "gpt2tokenizer":{"GPT-2 is a large-scale language model developed by OpenAI, known for generating human-like text based on the input it receives. It uses a transformer architecture with 1.5 billion parameters, making it capable of performing various natural language processing tasks such as translation, summarization, and text generation. Despite its capabilities, GPT-2 also raised ethical concerns about the potential misuse of AI for generating misleading or harmful content."},
+    "berttokenizer":{"BERT (Bidirectional Encoder Representations from Transformers) is a language model developed by Google that excels at understanding the context of words in a sentence by looking at both the preceding and following words. It utilizes a transformer architecture and has significantly improved the performance on various natural language processing tasks, such as question answering and language inference. BERT's bidirectional training approach allows it to capture the nuanced meaning and relationships in text more effectively than previous unidirectional models."},
+}
+
 
 models={
     "LogisticRegression":{
@@ -337,5 +350,37 @@ def LLM_models():
             return jsonify({"llm_models":list(llm_models.keys())})
     else:
         return jsonify({"error":"Please select a valid model"})
+    
+
+@app.route('/models_MC', methods=['GET'])
+def get_models_MC():
+    return jsonify({'models_MC' : list(models_MC.keys())})
+
+
+def save_selected_model_MC(model_MC_name):
+    with open(SELECTED_MODEL_MC , 'w') as f:
+        json.dump({'modelMC':model_MC_name}, f)
+        # f.write(json.dumps({"models":model_name}))
+
+def load_selcted_model_MC():
+    if os.path.exists(SELECTED_MODEL_MC):
+        with open(SELECTED_MODEL_MC, 'r') as f:
+            return json.load(f).get('modelMC', '')
+    return ''
+
+
+@app.route('/select_models_MC', methods=["POST"])
+def select_model_MC():
+    global SELECTED_MODEL_MC
+    data=request.json
+    selected_model_MC=data.get('model_MC')
+
+    if not selected_model_MC:
+        return jsonify({"error":"No model provided"}), 400
+    
+    print(selected_model_MC)
+    save_selected_model_MC(selected_model_MC)
+    print("The selected model Magical Codex:", selected_model_MC)
+    return jsonify({'Success':True, 'selected_model_MC':selected_model_MC})
 
 
