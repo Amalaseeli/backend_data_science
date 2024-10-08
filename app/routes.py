@@ -330,7 +330,7 @@ def gpt2_generate_response(input_text):
     input_ids = gpt2tokenizer.encode(input_text, return_tensors="pt")
     output = gpt2model.generate(input_ids, max_length=100, num_return_sequences=1)
     generated_text = gpt2tokenizer.decode(output[0], skip_special_tokens=True)
-    return generated_text
+    return generated_text[len(input_text):].strip()
 
 def bert_generate_text(input_text):
     input_ids = berttokenizer.encode(input_text, return_tensors="pt")
@@ -343,9 +343,9 @@ def LLM_models():
     if request.method == "POST" :
         data=request.json
         user_input=data.get("user_input")
-        gerated_text=gpt2_generate_response(user_input)
-        print(gerated_text)
-        return jsonify({"generated_text":gerated_text})
+        genrated_text=gpt2_generate_response(user_input)
+        print(genrated_text)
+        return jsonify({"generated_text":genrated_text})
     elif request.method=="GET":
             return jsonify({"llm_models":list(llm_models.keys())})
     else:
@@ -383,6 +383,41 @@ def select_model_MC():
     print("The selected model Magical Codex:", selected_model_MC)
     return jsonify({'Success':True, 'selected_model_MC':selected_model_MC})
 
-#prediction of bert
+# @magicalCodex_blueprint.route('/generate_text', methods=['POST'])
+@app.route('/magical_codex/generate_text', methods=["Post"])
+def generate_text():
+    data=request.json
+    input_text=data.get("input_text")
 
+    print(f"Received input for GPT-2 generation: {input_text}")
+    generated_text = gpt2_generate_response(input_text)
+    return jsonify({'generated_text': generated_text})
+
+@app.route('/datasets_MC')
+def list_dataset_MC():
+    datasets_MC=[f for f in os.listdir(DATASETS_MC_DIR) if f.endswith('txt') ]
+    print(datasets_MC)
+    return jsonify(datasets_MC)
+
+@app.route('/process_dataset_MC', methods=["POST"])
+def process_dataset_MC():
+    # data=request.json.get('dataset_name')
+    dataset_name='textdataset.txt'
+    # model_type=request.get('Model_type')
+    dataset_path=os.path.join(DATASETS_MC_DIR,dataset_name)
+
+    if not os.path.exists(dataset_path):
+        return jsonify({"error":"Dataset not found"}), 400
+    
+    with open(dataset_path, 'r') as f:
+        dataset_content=f.read()
+    
+    selected_model=load_selcted_model_MC()
+
+    # if not selected_model or model_type not in models_MC:
+    #     return jsonify({"error":"Model not selected"}), 400
+    
+    if selected_model == "gpt2tokenizer":
+        gpt2_generate_response(dataset_content)
+    
 
