@@ -39,7 +39,7 @@ jobs:
     #   #   pytest
     #     run: | 
     #       python run.py
-    
+
     # - name: List files to debug Dockerfile location
     #   run: ls -la  # Lists files in the repository
 
@@ -56,7 +56,7 @@ jobs:
       uses: docker/build-push-action@v3
       with:
           context: .
-          file: ./Dockerfile
+          file: ../Dockerfile
           push: true
           tags: ${{secrets.DOCKER_USERNAME }}/backend_api:latest
       
