@@ -383,4 +383,6 @@ def select_model_MC():
     print("The selected model Magical Codex:", selected_model_MC)
     return jsonify({'Success':True, 'selected_model_MC':selected_model_MC})
 
+#prediction of bert
+
 
